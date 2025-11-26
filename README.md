@@ -156,4 +156,6 @@ Este proyecto está bajo la licencia GPL-3.0. Ver el archivo [LICENSE](LICENSE) 
 
 **Hecho con ❤️ por ticoxz**
 
+*Última actualización: Noviembre 2025*
+
 </div>
