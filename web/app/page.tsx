@@ -47,37 +47,23 @@ export default function Home() {
   const handleDownload = async () => {
     if (!info) return;
 
-    // En una app real, usaríamos la URL original guardada o la pasaríamos de nuevo
-    // Aquí asumimos que tenemos la URL en el estado o la extraemos de info (si la guardamos)
-    // Para simplificar, vamos a pedir al usuario que re-confirme o guardamos la URL en el estado.
-    // Vamos a guardar la URL en un estado separado para usarla aquí.
-    // Pero por ahora, solo mostraremos un mensaje de "Iniciando..."
-
-    // NOTA: Necesitamos la URL original para descargar. 
-    // Vamos a asumir que el componente UrlInput pasa la URL y la guardamos.
-    // Modificaré esto en un paso siguiente si es necesario, pero por ahora
-    // vamos a simular la llamada con la URL que deberíamos tener.
-
-    // Hack rápido: extraer URL del objeto info si es posible, o guardar en estado en handleSearch.
-    // Vamos a asumir que 'info.data.url' existe o algo similar.
-    // Si no, fallará. Mejor guardamos la URL en handleSearch.
-
-    // CORRECCIÓN: Guardar URL en estado.
-    // (Lo haré en la siguiente iteración de este archivo si falla, pero por ahora
-    // asumiré que info.data tiene la url o la pasamos).
-
-    // Para este MVP, solo mostraremos el estado visual.
     setDownloadStatus("Iniciando descarga...");
 
     // Llamada real al backend
     try {
-      const urlToDownload = info.data.url || info.data.external_urls?.spotify; // Intento de obtener URL
+      const urlToDownload = info.data.url || info.data.external_urls?.spotify;
       if (!urlToDownload) throw new Error("URL no encontrada");
+
+      // Leer la calidad guardada desde localStorage, por defecto 320K
+      const quality = localStorage.getItem("audio_quality") || "320K";
 
       const response = await fetch("http://localhost:8000/api/download", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spotify_url: urlToDownload }),
+        body: JSON.stringify({
+          spotify_url: urlToDownload,
+          quality: quality
+        }),
       });
 
       if (response.ok) {

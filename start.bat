@@ -7,6 +7,12 @@ start "SpotDown Backend" cmd /k "cd api && venv\Scripts\activate && uvicorn main
 :: Iniciar Frontend
 start "SpotDown Frontend" cmd /k "cd web && npm run dev"
 
+:: Esperar un momento antes de abrir el navegador
+timeout /t 3 /nobreak >nul
+
+:: Abrir navegador automáticamente
+start http://localhost:3000
+
 echo.
 echo ========================================================
 echo  SpotDown se esta ejecutando!

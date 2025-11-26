@@ -31,7 +31,7 @@ class SpotifyUrl(BaseModel):
 
 class DownloadRequest(BaseModel):
     spotify_url: str
-    # Opcional: calidad, etc.
+    quality: Optional[str] = "320K"  # Por defecto: calidad máxima
 
 @app.get("/")
 def read_root():
@@ -78,6 +78,7 @@ async def download_song(data: DownloadRequest, background_tasks: BackgroundTasks
     Nota: Por ahora es síncrono para simplificar, pero idealmente debería ser asíncrono.
     """
     url = data.spotify_url
+    quality = data.quality  # Obtener la calidad del request
     
     # Extraer info
     with SpotifyExtractor() as extractor:
@@ -102,12 +103,12 @@ async def download_song(data: DownloadRequest, background_tasks: BackgroundTasks
         # Seleccionamos el primer resultado (mejor coincidencia)
         best_match = youtube_results[0]
         
-        # Ejecutar descarga
+        # Ejecutar descarga con la calidad especificada
         # Nota: download_track es síncrono. Si lo ponemos en background_tasks, 
         # el usuario recibirá respuesta inmediata "Descarga iniciada".
-        background_tasks.add_task(download_track, best_match, spotify_info)
+        background_tasks.add_task(download_track, best_match, spotify_info, quality)
         
-        return {"status": "started", "message": f"Descargando {spotify_info['title']} de {spotify_info['artist']}"}
+        return {"status": "started", "message": f"Descargando {spotify_info['title']} de {spotify_info['artist']} en calidad {quality}"}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -8,6 +8,7 @@ import Link from "next/link";
 export default function Settings() {
     const [clientId, setClientId] = useState("");
     const [clientSecret, setClientSecret] = useState("");
+    const [quality, setQuality] = useState("320K");
     const [status, setStatus] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -20,6 +21,12 @@ export default function Settings() {
                 if (data.client_secret) setClientSecret(data.client_secret);
             })
             .catch(() => { });
+
+        // Cargar calidad guardada desde localStorage
+        const savedQuality = localStorage.getItem("audio_quality");
+        if (savedQuality) {
+            setQuality(savedQuality);
+        }
     }, []);
 
     const handleSave = async (e: React.FormEvent) => {
@@ -28,6 +35,9 @@ export default function Settings() {
         setStatus(null);
 
         try {
+            // Guardar calidad en localStorage
+            localStorage.setItem("audio_quality", quality);
+
             const response = await fetch("http://localhost:8000/api/settings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -93,6 +103,25 @@ export default function Settings() {
                                 className="w-full bg-black border border-gray-700 rounded-lg p-3 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors"
                                 placeholder="Pegar Client Secret aquí"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Calidad de Audio
+                            </label>
+                            <select
+                                value={quality}
+                                onChange={(e) => setQuality(e.target.value)}
+                                className="w-full bg-black border border-gray-700 rounded-lg p-3 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors cursor-pointer"
+                            >
+                                <option value="128K">128 kbps - Calidad Estándar</option>
+                                <option value="192K">192 kbps - Calidad Alta</option>
+                                <option value="256K">256 kbps - Calidad Muy Alta</option>
+                                <option value="320K">320 kbps - Calidad Máxima (Recomendado)</option>
+                            </select>
+                            <p className="mt-2 text-xs text-gray-500">
+                                Esta configuración se aplicará a todas las descargas futuras.
+                            </p>
                         </div>
 
                         <div className="bg-gray-800/50 p-4 rounded-lg text-sm text-gray-400">
