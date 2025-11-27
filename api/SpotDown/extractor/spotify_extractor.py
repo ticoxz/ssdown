@@ -45,6 +45,18 @@ def extract_playlist_id(spotify_url):
     return None
 
 
+def extract_album_id(spotify_url):
+    patterns = [
+        r'album/([a-zA-Z0-9]{22})',
+        r'spotify:album:([a-zA-Z0-9]{22})'
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, spotify_url)
+        if match:
+            return match.group(1)
+    return None
+
+
 class SpotifyExtractor:
     def __init__(self):
         client_id = os.getenv("SPOTIPY_CLIENT_ID")
@@ -110,12 +122,12 @@ class SpotifyExtractor:
             logging.error(f"Error extracting track info: {e}")
             return None
 
-    def extract_playlist_tracks(self, playlist_url: str) -> List[Dict]:
+    def extract_playlist_tracks(self, playlist_url: str) -> Dict:
         playlist_id = extract_playlist_id(playlist_url)
 
         if not playlist_id:
             logging.error("Invalid Spotify playlist URL")
-            return []
+            return {}
         
         try:
             # Extract playlist info
@@ -188,8 +200,83 @@ class SpotifyExtractor:
             # Convert back to list
             unique_tracks = list(unique.values())
             console.print(f"[green]Extracted [red]{len(unique_tracks)}[/red] unique tracks from playlist")
-            return unique_tracks
+            
+            return {
+                "title": playlist['name'],
+                "cover_url": playlist['images'][0]['url'] if playlist['images'] else None,
+                "url": playlist_url,
+                "tracks": unique_tracks
+            }
         
         except Exception as e:
             logging.error(f"Error extracting playlist: {e}")
-            return []
+            return {}
+
+    def extract_album_tracks(self, album_url: str) -> Dict:
+        album_id = extract_album_id(album_url)
+
+        if not album_id:
+            logging.error("Invalid Spotify album URL")
+            return {}
+        
+        try:
+            # Extract album info
+            album = self.sp.album(album_id)
+            total_tracks = album['tracks']['total']
+            tracks_info = []
+            offset = 0
+            limit = 50 # Album tracks limit is usually 50
+            console.print(f"[green]Album has [red]{total_tracks}[/red] tracks.")
+
+            with Progress() as progress:
+                task = progress.add_task("[cyan]Extracting tracks...", total=total_tracks)
+
+                while offset < total_tracks:
+                    progress.update(task, advance=0, description=f"[cyan]Loading tracks {offset + 1}-{min(offset + limit, total_tracks)} of {total_tracks}...")
+                    results = self.sp.album_tracks(
+                        album_id,
+                        offset=offset,
+                        limit=limit
+                    )
+
+                    if not results['items']:
+                        break
+
+                    for item in results['items']:
+                        # Extract track details
+                        # Note: album_tracks returns simplified track objects, missing album info (but we have it from album object)
+                        
+                        # Extract duration in seconds
+                        duration_ms = item['duration_ms']
+                        duration_seconds = duration_ms // 1000 if duration_ms else None
+
+                        # Extract artists
+                        artists = [artist['name'] for artist in item['artists']]
+
+                        # Compile track info
+                        track_info = {
+                            "title": item['name'],
+                            "artist": ', '.join(artists),
+                            "album": album['name'],
+                            "added_at": None,
+                            "cover_art": album['images'][0]['url'] if album['images'] else None,
+                            "duration_ms": duration_ms,
+                            "duration_seconds": duration_seconds,
+                            "play_count": None
+                        }
+
+                        # Append to list
+                        tracks_info.append(track_info)
+                        progress.update(task, advance=1)
+                    offset += limit
+
+            return {
+                "title": album['name'],
+                "cover_url": album['images'][0]['url'] if album['images'] else None,
+                "url": album_url,
+                "tracks": tracks_info
+            }
+        
+        except Exception as e:
+            logging.error(f"Error extracting album: {e}")
+            return {}

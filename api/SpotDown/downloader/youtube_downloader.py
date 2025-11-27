@@ -3,19 +3,17 @@
 import logging
 import os
 from typing import Dict, Optional, Callable
-
+import traceback
 
 # External imports
 import httpx
 import yt_dlp
 from rich.console import Console
 
-
 # Internal utils
 from SpotDown.utils.os import file_utils
 from SpotDown.utils.config_json import config_manager
-from SpotDown.helpers.ffmpeg import convert_to_jpg_with_ffmpeg
-
+from SpotDown.helpers.ffmpeg import convert_to_jpg_with_ffmpeg, add_cover_art
 
 # Variable
 console = Console()
@@ -106,16 +104,15 @@ class YouTubeDownloader:
                 'quiet': True,
                 'no_warnings': True,
                 'noplaylist': True,
+                'verbose': True # Enable verbose logging
             }
+            
+            logging.info(f"DEBUG: ffmpeg_path: {file_utils.ffmpeg_path}")
+            logging.info(f"DEBUG: ydl_opts: {ydl_opts}")
 
             if allow_metadata:
-                ydl_opts['writethumbnail'] = False # We handle thumbnail manually to ensure it's embedded correctly if needed, or use embed-thumbnail
+                ydl_opts['writethumbnail'] = False 
                 ydl_opts['postprocessors'].append({'key': 'FFmpegMetadata', 'add_metadata': True})
-                
-                if cover_path and cover_path.exists():
-                     ydl_opts['postprocessors'].append({
-                        'key': 'EmbedThumbnail',
-                    })
             
             # Add progress hook if provided
             if progress_hook:
@@ -123,31 +120,6 @@ class YouTubeDownloader:
 
             # Run download
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                # If we manually downloaded a cover, we might need to tell yt-dlp about it or embed it manually.
-                # The EmbedThumbnail postprocessor usually looks for a file on disk matching the video filename but with image extension
-                # OR we can pass it. 
-                # Actually, yt-dlp's EmbedThumbnail tries to embed the thumbnail downloaded by yt-dlp.
-                # If we want to use our custom cover, we might need to use FFmpeg directly or trick yt-dlp.
-                # For simplicity, let's rely on our manual cover handling if we want to be safe, 
-                # BUT the previous code used --embed-thumbnail which implies yt-dlp handles it.
-                # However, the previous code passed `cover_path` existence check to add `--embed-thumbnail`.
-                # If we want to embed *our* specific file, we might need to rename it to what yt-dlp expects 
-                # or use atomicparsley/ffmpeg manually.
-                # Let's try to use the 'writethumbnail': False and rely on the fact that we have the image.
-                # Wait, the previous code used `subprocess` and passed `--embed-thumbnail`. 
-                # If we want to replicate that with `yt_dlp`, we use `EmbedThumbnail` PP.
-                # But `EmbedThumbnail` expects the thumbnail to be downloaded by `yt-dlp` or present.
-                # Let's keep it simple: If we have a cover_path, we can use `FFmpegMetadata` to add it if we configure it right,
-                # or just let `yt-dlp` download it if we didn't do it manually.
-                # BUT the code manually downloads it.
-                # Let's stick to the previous logic: We have a cover file.
-                # We can inject the cover file path into the info_dict passed to PP?
-                # Actually, simpler: just run the download. If we want to embed the custom cover, 
-                # we can do it after download if yt-dlp doesn't pick it up.
-                # For now, let's assume `EmbedThumbnail` might not pick up our custom file unless named correctly.
-                # Let's try to pass the thumbnail path if possible.
-                pass
-
                 ydl.download([video_info['url']])
 
             # Check if file exists
@@ -159,17 +131,19 @@ class YouTubeDownloader:
                     console.print("[red]Download completed![/red]")
                 logging.info(f"Download completed: {downloaded_file}")
 
-                # Remove cover file after embedding (if it was used/embedded)
-                # Since we are using yt-dlp library, if we didn't configure it to use OUR file, it might not be embedded.
-                # But let's assume for now the priority is the progress bar. 
-                # We can refine metadata embedding later if it's missing.
-                
+                # Manually embed cover art if available
                 if cover_path and cover_path.exists():
                     try:
+                        if add_cover_art(downloaded_file, cover_path):
+                            logging.info(f"Embedded cover art into {downloaded_file}")
+                        else:
+                            logging.warning("Failed to embed cover art")
+                            
+                        # Cleanup cover file
                         cover_path.unlink()
                         logging.info(f"Removed temporary cover file: {cover_path}")
                     except Exception as ex:
-                        logging.warning(f"Failed to remove cover file: {ex}")
+                        logging.warning(f"Failed to process cover art: {ex}")
 
                 return True
             else:
@@ -180,4 +154,5 @@ class YouTubeDownloader:
             if not auto_first:
                 console.print(f"[red]Error during download: {e}[/red]")
             logging.error(f"Error during download: {e}")
+            traceback.print_exc()
             return False

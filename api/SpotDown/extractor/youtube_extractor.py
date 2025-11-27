@@ -37,6 +37,27 @@ class YouTubeExtractor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
+    def search(self, query: str, spotify_info: Optional[Dict] = None) -> List[Dict]:
+        """
+        High-level search method that searches and sorts results
+        
+        Args:
+            query (str): Search query
+            spotify_info (Dict, optional): Spotify track info for sorting
+            
+        Returns:
+            List[Dict]: Sorted list of found videos
+        """
+        results = self.search_videos(query)
+        
+        if not results:
+            return []
+            
+        if spotify_info:
+            self.sort_by_affinity_and_duration(results, spotify_info)
+            
+        return results
+
     def search_videos(self, query: str) -> List[Dict]:
         """
         Search for videos on YouTube

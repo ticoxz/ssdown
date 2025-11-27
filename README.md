@@ -58,7 +58,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-La API estará disponible en `http://localhost:8000`
+La API estará disponible en `http://localhost:8001`
 
 ### Frontend (Interfaz Web)
 
@@ -77,6 +77,8 @@ La interfaz web estará disponible en `http://localhost:3000`
 3. **Selecciona la calidad** de audio deseada (128K, 192K, 320K)
 4. **Haz clic en descargar** y espera a que se procese
 5. **Descarga tu música** en formato MP3 con metadata completa
+
+> **Tip:** Haz clic en el icono de ayuda (?) en la esquina superior derecha para ver detalles sobre las plataformas soportadas.
 
 ## ⚙️ Configuración Avanzada
 
@@ -123,21 +125,12 @@ El archivo `config.json` permite personalizar el comportamiento:
 
 ```
 alejandria-of-music/
-├── api/                    # Backend FastAPI
-│   ├── SpotDown/          # Módulo principal de descarga
-│   │   ├── extractor/     # Extractores de metadata (Spotify, YouTube, SoundCloud)
-│   │   ├── downloader/    # Descargadores de audio
-│   │   └── utils/         # Utilidades y helpers
-│   ├── main.py            # Servidor API
-│   └── requirements.txt   # Dependencias Python
-├── web/                   # Frontend Next.js
-│   ├── app/              # Páginas y componentes React
-│   ├── public/           # Recursos estáticos
-│   └── package.json      # Dependencias Node.js
-├── config.json           # Configuración de la aplicación
-├── .env                  # Variables de entorno (no incluido en git)
-├── start.bat             # Script de inicio rápido
-└── README.md             # Este archivo
+├── api/                    # Backend FastAPI (Puerto 8001)
+├── web/                    # Frontend Next.js (Puerto 3000)
+├── config.json             # Configuración
+├── .env                    # Variables de entorno
+├── start.bat               # Script de inicio
+└── README.md               # Documentación
 ```
 
 ## 🛠️ Tecnologías Utilizadas
@@ -153,12 +146,13 @@ alejandria-of-music/
 - **TypeScript** - JavaScript con tipado estático
 - **Tailwind CSS** - Framework de estilos utilitarios
 - **React Hooks** - Gestión de estado moderna
+- **Lucide React** - Iconos modernos
 
 ## 🎨 Plataformas Soportadas
 
 | Plataforma | Soporte | Características |
 |------------|---------|-----------------|
-| 🎵 Spotify | ✅ Completo | Canciones, álbumes, playlists |
+| 🎵 Spotify | ✅ Completo | Canciones, álbumes, playlists (con portadas) |
 | 🎬 YouTube | ✅ Completo | Videos individuales, extracción de audio |
 | 🎧 SoundCloud | ✅ Completo | Tracks individuales |
 
@@ -174,15 +168,16 @@ alejandria-of-music/
 - Intenta con una calidad de audio menor
 
 ### La interfaz no carga
-- Verifica que el backend esté corriendo en el puerto 8000
+- Verifica que el backend esté corriendo en el puerto 8001
 - Verifica que el frontend esté corriendo en el puerto 3000
 - Revisa la consola del navegador para errores
 
 ## 📝 API Endpoints
 
 - `GET /` - Información de la API
-- `POST /api/search` - Buscar música por URL
-- `POST /api/download` - Descargar música
+- `POST /api/info` - Obtener información de URL (Spotify/YouTube/SoundCloud)
+- `POST /api/download` - Iniciar descarga
+- `GET /api/progress/{task_id}` - Consultar progreso de descarga
 - `GET /api/download/{filename}` - Obtener archivo descargado
 
 ## ⚠️ Disclaimer
