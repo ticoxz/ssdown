@@ -1,7 +1,7 @@
 # 05.04.2024
 
 import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Callable
 
 
 # Internal utils
@@ -36,13 +36,10 @@ def extract_spotify_data(spotify_url: str, max_retry: int = 3) -> Optional[Dict]
 def search_on_youtube(query: str, spotify_info: Optional[Dict] = None) -> List[Dict]:
     """Search for videos on YouTube and sort them by relevance"""
     with YouTubeExtractor() as youtube_extractor:
-        results = youtube_extractor.search_videos(query)
-        if results and spotify_info:
-            youtube_extractor.sort_by_affinity_and_duration(results, spotify_info)
-        return results
+        return youtube_extractor.search(query, spotify_info)
 
 
-def download_track(video_info: Dict, spotify_info: Dict) -> bool:
+def download_track(video_info: Dict, spotify_info: Dict, quality: str = "320K", progress_hook: Optional[Callable] = None, overwrite: bool = False) -> bool:
     """Download a single track and add metadata"""
     downloader = YouTubeDownloader()
     music_folder = file_utils.get_music_folder()
@@ -52,13 +49,13 @@ def download_track(video_info: Dict, spotify_info: Dict) -> bool:
     filename = file_utils.create_filename(artist, title)
 
     # Check if song already exists
-    if file_utils.is_song_already_downloaded(artist, title):
+    if not overwrite and file_utils.is_song_already_downloaded(artist, title):
         console.show_info(f"[yellow]Already exists: {filename}")
         return False
     
     console.show_download_info(music_folder, filename)
     console.show_download_start(video_info['title'], video_info['url'])
-    return downloader.download(video_info, spotify_info)
+    return downloader.download(video_info, spotify_info, quality, progress_hook)
 
 
 def handle_playlist_download(tracks: List[Dict], max_results: int):

@@ -1,81 +1,84 @@
-# 🎵 SSDown - Spotify Downloader
+# 🎵 Alejandria of Music
 
-Un descargador de música de Spotify potente y fácil de usar, con interfaz web moderna y backend en Python.
+Una biblioteca musical universal que te permite descargar música de múltiples plataformas con una interfaz web moderna y elegante.
 
 ## ✨ Características
 
-- 🎵 **Descarga canciones individuales** desde Spotify
-- 📋 **Descarga playlists completas** con facilidad
-- 🎨 **Carátulas embebidas automáticamente** (formato JPEG)  
-- 🖥️ **Interfaz web moderna** con Next.js
+- 🎵 **Descarga desde Spotify** - Canciones individuales y playlists completas
+- 🎬 **Descarga desde YouTube** - Extrae audio de alta calidad de videos
+- 🎧 **Descarga desde SoundCloud** - Accede a música independiente
+- 🎨 **Carátulas embebidas automáticamente** en formato JPEG
+- 🖥️ **Interfaz web moderna** construida con Next.js
 - ⚡ **API REST rápida** con FastAPI
 - 🔒 **Configuración segura** con variables de entorno
 - 🎧 **Alta calidad de audio** (hasta 320kbps)
+- 🎯 **Selector de calidad** - Elige entre 128K, 192K o 320K
+- 📋 **Descarga por lotes** - Múltiples canciones simultáneamente
 
-## 🚀 Instalación
+## 🚀 Inicio Rápido
 
 ### Prerrequisitos
 
 - Python 3.8+
-- Node.js 18+ (para la interfaz web)
-- Credenciales de Spotify API
+- Node.js 18+
+- Credenciales de Spotify API (para descargas de Spotify)
 
-### Configuración
+### Instalación Rápida
 
-1. **Obtén tus credenciales de Spotify:**
-   - Ve al [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/)
-   - Inicia sesión y crea una nueva aplicación
-   - Copia tu **Client ID** y **Client Secret**
+1. **Clona el repositorio:**
+   ```bash
+   git clone https://github.com/tuusuario/alejandria-of-music.git
+   cd alejandria-of-music
+   ```
 
-2. **Configura las variables de entorno:**
+2. **Configura las credenciales de Spotify:**
    
    Crea un archivo `.env` en la raíz del proyecto:
    ```env
    SPOTIPY_CLIENT_ID=tu_client_id_aqui
    SPOTIPY_CLIENT_SECRET=tu_client_secret_aqui
    ```
+   
+   > 💡 **Obtén tus credenciales:** Ve al [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/), crea una app y copia tus credenciales.
 
-3. **Instala las dependencias del backend:**
+3. **Ejecuta el script de inicio:**
    ```bash
-   cd api
-   pip install -r requirements.txt
+   start.bat
    ```
+   
+   ¡Eso es todo! La aplicación se abrirá automáticamente en tu navegador.
 
-4. **Instala las dependencias del frontend:**
-   ```bash
-   cd web
-   npm install
-   ```
+## 💻 Uso Manual
 
-## 💻 Uso
-
-### Ejecutar el backend (API)
+### Backend (API)
 
 ```bash
 cd api
+pip install -r requirements.txt
 python main.py
 ```
 
 La API estará disponible en `http://localhost:8000`
 
-### Ejecutar el frontend (Interfaz Web)
+### Frontend (Interfaz Web)
 
 ```bash
 cd web
+npm install
 npm run dev
 ```
 
 La interfaz web estará disponible en `http://localhost:3000`
 
-### Uso desde línea de comandos
+## 🎯 Cómo Usar
 
-También puedes usar el script directamente:
+1. **Abre la aplicación** en tu navegador
+2. **Pega el enlace** de Spotify, YouTube o SoundCloud
+3. **Selecciona la calidad** de audio deseada (128K, 192K, 320K)
+4. **Haz clic en descargar** y espera a que se procese
+5. **Descarga tu música** en formato MP3 con metadata completa
 
-```bash
-python run.py
-```
-
-## ⚙️ Configuración
+## ⚙️ Configuración Avanzada
 
 El archivo `config.json` permite personalizar el comportamiento:
 
@@ -102,60 +105,111 @@ El archivo `config.json` permite personalizar el comportamiento:
 ### Opciones de Configuración
 
 #### DEFAULT
-- **`debug`**: Activar/desactivar modo debug
+- **`debug`**: Activar modo debug para ver logs detallados
 - **`clean_console`**: Limpiar consola para interfaz más limpia
-- **`show_message`**: Mostrar mensajes informativos
+- **`show_message`**: Mostrar mensajes informativos durante descargas
 
 #### DOWNLOAD
-- **`allow_metadata`**: Descargar miniaturas y embeber metadata
-- **`auto_first`**: Seleccionar automáticamente el primer resultado
-- **`quality`**: Calidad de audio (320K recomendado)
-- **`thread`**: Número de descargas concurrentes
+- **`allow_metadata`**: Descargar carátulas y embeber metadata (artista, álbum, etc.)
+- **`auto_first`**: Seleccionar automáticamente el primer resultado de búsqueda
+- **`quality`**: Calidad de audio por defecto (128K, 192K, 320K)
+- **`thread`**: Número de descargas concurrentes (máximo 10)
 
 #### SEARCH
 - **`limit`**: Número máximo de resultados de búsqueda
-- **`exclude_emoji`**: Excluir emojis de resultados
+- **`exclude_emoji`**: Excluir emojis de los resultados
 
 ## 📁 Estructura del Proyecto
 
 ```
-ssdown/
-├── api/                 # Backend FastAPI
-│   ├── SpotDown/       # Módulo principal de descarga
-│   ├── main.py         # Servidor API
-│   └── requirements.txt
-├── web/                # Frontend Next.js
-│   ├── app/           # Páginas y componentes
-│   ├── public/        # Recursos estáticos
-│   └── package.json
-├── config.json        # Archivo de configuración
-├── .env              # Variables de entorno (no incluido en git)
-└── README.md         # Este archivo
+alejandria-of-music/
+├── api/                    # Backend FastAPI
+│   ├── SpotDown/          # Módulo principal de descarga
+│   │   ├── extractor/     # Extractores de metadata (Spotify, YouTube, SoundCloud)
+│   │   ├── downloader/    # Descargadores de audio
+│   │   └── utils/         # Utilidades y helpers
+│   ├── main.py            # Servidor API
+│   └── requirements.txt   # Dependencias Python
+├── web/                   # Frontend Next.js
+│   ├── app/              # Páginas y componentes React
+│   ├── public/           # Recursos estáticos
+│   └── package.json      # Dependencias Node.js
+├── config.json           # Configuración de la aplicación
+├── .env                  # Variables de entorno (no incluido en git)
+├── start.bat             # Script de inicio rápido
+└── README.md             # Este archivo
 ```
 
 ## 🛠️ Tecnologías Utilizadas
 
-- **Backend:** Python, FastAPI, Spotipy
-- **Frontend:** Next.js, React, TypeScript
-- **Descarga:** yt-dlp
-- **Metadata:** mutagen
+### Backend
+- **FastAPI** - Framework web moderno y rápido
+- **Spotipy** - Cliente de Spotify API
+- **yt-dlp** - Descargador universal de audio/video
+- **mutagen** - Manipulación de metadata de audio
+
+### Frontend
+- **Next.js 14** - Framework React con App Router
+- **TypeScript** - JavaScript con tipado estático
+- **Tailwind CSS** - Framework de estilos utilitarios
+- **React Hooks** - Gestión de estado moderna
+
+## 🎨 Plataformas Soportadas
+
+| Plataforma | Soporte | Características |
+|------------|---------|-----------------|
+| 🎵 Spotify | ✅ Completo | Canciones, álbumes, playlists |
+| 🎬 YouTube | ✅ Completo | Videos individuales, extracción de audio |
+| 🎧 SoundCloud | ✅ Completo | Tracks individuales |
+
+## 🔧 Solución de Problemas
+
+### Error de conexión con Spotify
+- Verifica que tus credenciales en `.env` sean correctas
+- Asegúrate de que tu app de Spotify esté activa en el Dashboard
+
+### Error al descargar
+- Verifica tu conexión a internet
+- Asegúrate de que el enlace sea válido y público
+- Intenta con una calidad de audio menor
+
+### La interfaz no carga
+- Verifica que el backend esté corriendo en el puerto 8000
+- Verifica que el frontend esté corriendo en el puerto 3000
+- Revisa la consola del navegador para errores
+
+## 📝 API Endpoints
+
+- `GET /` - Información de la API
+- `POST /api/search` - Buscar música por URL
+- `POST /api/download` - Descargar música
+- `GET /api/download/{filename}` - Obtener archivo descargado
 
 ## ⚠️ Disclaimer
 
-Este software se proporciona "tal cual", sin garantía de ningún tipo. 
+Este software se proporciona "tal cual", sin garantía de ningún tipo.
 
 **Importante**: Esta herramienta está destinada únicamente para fines educativos y uso personal. Los usuarios son responsables de asegurarse de cumplir con las leyes aplicables y los términos de servicio de las plataformas. Los desarrolladores no fomentan ni condonan la piratería o la infracción de derechos de autor.
 
-## 📝 Licencia
+## 📄 Licencia
 
 Este proyecto está bajo la licencia GPL-3.0. Ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Por favor:
+1. Haz fork del proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
 ---
 
 <div align="center">
 
-**Hecho con ❤️ por ticoxz**
+**made with <3 by tico**
 
-*Última actualización: Noviembre 2025*
+*Alejandria of Music - Tu biblioteca musical universal*
 
 </div>

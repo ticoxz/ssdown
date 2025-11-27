@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UrlInput } from "./components/UrlInput";
-import { Download, Music, Disc, CheckCircle2, AlertCircle, Settings as SettingsIcon } from "lucide-react";
+import { Download, Music, Disc, CheckCircle2, AlertCircle, Settings as SettingsIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface SpotifyInfo {
@@ -17,12 +17,16 @@ export default function Home() {
   const [info, setInfo] = useState<SpotifyInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloadStatus, setDownloadStatus] = useState<string | null>(null);
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number>(0);
 
   const handleSearch = async (url: string) => {
     setIsLoading(true);
     setError(null);
     setInfo(null);
     setDownloadStatus(null);
+    setTaskId(null);
+    setProgress(0);
 
     try {
       const response = await fetch("http://localhost:8000/api/info", {
@@ -48,11 +52,17 @@ export default function Home() {
     if (!info) return;
 
     setDownloadStatus("Iniciando descarga...");
+    setProgress(0);
+    setTaskId(null);
 
     // Llamada real al backend
     try {
-      const urlToDownload = info.data.url || info.data.external_urls?.spotify;
-      if (!urlToDownload) throw new Error("URL no encontrada");
+      console.log("Info object:", info);
+      const urlToDownload = info.data.url || info.data.original_url || info.data.external_urls?.spotify;
+      if (!urlToDownload) {
+        console.error("URL missing in info.data:", info.data);
+        throw new Error("URL no encontrada en la respuesta");
+      }
 
       // Leer la calidad guardada desde localStorage, por defecto 320K
       const quality = localStorage.getItem("audio_quality") || "320K";
@@ -67,14 +77,62 @@ export default function Home() {
       });
 
       if (response.ok) {
-        setDownloadStatus("Descarga iniciada. Revisa la consola del servidor para progreso.");
+        const data = await response.json();
+        console.log("Download response data:", data);
+        setDownloadStatus("Descarga iniciada...");
+        if (data.task_id) {
+          console.log("Setting taskId:", data.task_id);
+          setTaskId(data.task_id);
+        } else {
+          console.error("No task_id in response");
+        }
       } else {
+        console.error("Response not ok");
         setDownloadStatus("Error al iniciar descarga.");
       }
-    } catch (e) {
-      setDownloadStatus("Error de conexión.");
+    } catch (e: any) {
+      console.error("Download error:", e);
+      setDownloadStatus(`Error: ${e.message || "Error de conexión"}`);
     }
   };
+
+  // Polling for progress
+  useEffect(() => {
+    if (!taskId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/api/progress/${taskId}`);
+        if (res.ok) {
+          const data = await res.json();
+          console.log("Progress data:", data);
+
+          if (data.status === 'downloading') {
+            setDownloadStatus(`Descargando: ${data.percent.toFixed(1)}%`);
+            setProgress(data.percent);
+          } else if (data.status === 'processing') {
+            setDownloadStatus("Procesando audio...");
+            setProgress(100);
+          } else if (data.status === 'completed') {
+            setDownloadStatus("¡Descarga completada!");
+            setProgress(100);
+            clearInterval(interval);
+            setTaskId(null); // Stop polling
+          } else if (data.status === 'error') {
+            setDownloadStatus(`Error: ${data.error || "Falló la descarga"}`);
+            clearInterval(interval);
+            setTaskId(null);
+          } else if (data.status === 'starting') {
+            setDownloadStatus("Iniciando...");
+          }
+        }
+      } catch (e) {
+        console.error("Polling error", e);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [taskId]);
 
   return (
     <main className="min-h-screen bg-black text-white selection:bg-green-500 selection:text-black overflow-hidden">
@@ -88,10 +146,10 @@ export default function Home() {
           className="text-center mb-12"
         >
           <h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-linear-to-b from-white to-gray-400">
-            SpotDown
+            Alejandria of Music
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Descarga tu música favorita de Spotify en alta calidad.
+            Descarga tu música favorita de Spotify, YouTube y SoundCloud en alta calidad.
             <br />
             <span className="text-green-500 font-semibold">Gratis, rápido y simple.</span>
           </p>
@@ -161,14 +219,36 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Progress Bar */}
+              {taskId && (
+                <div className="w-full bg-gray-700 rounded-full h-2.5 mb-4 overflow-hidden">
+                  <motion.div
+                    className="bg-green-500 h-2.5 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              )}
+
               <button
                 onClick={handleDownload}
-                disabled={!!downloadStatus}
+                disabled={!!taskId || downloadStatus === "¡Descarga completada!"}
                 className="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {downloadStatus ? (
+                {taskId ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    {downloadStatus}
+                  </>
+                ) : downloadStatus === "¡Descarga completada!" ? (
                   <>
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    {downloadStatus}
+                  </>
+                ) : downloadStatus && downloadStatus.startsWith("Error") ? (
+                  <>
+                    <AlertCircle className="w-5 h-5 text-red-600" />
                     {downloadStatus}
                   </>
                 ) : (

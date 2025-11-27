@@ -51,15 +51,17 @@ class SpotifyExtractor:
         client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
 
         if not client_id or not client_secret:
-            # console.print("[red]Missing Spotify credentials...")
-            # Instead of exit, raise error
             raise ValueError("Faltan las credenciales de Spotify. Configúralas en la web.")
 
-        self.sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
-            client_id=client_id,
-            client_secret=client_secret
-        ))
-        logging.info("SpotifyExtractor initialized")
+        try:
+            self.sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
+                client_id=client_id,
+                client_secret=client_secret
+            ))
+            logging.info("SpotifyExtractor initialized")
+        except Exception as e:
+            logging.error(f"Spotify init error: {e}")
+            raise ValueError("Credenciales de Spotify inválidas. Verifícalas en Configuración.")
 
     def __enter__(self):
         return self
@@ -67,27 +69,24 @@ class SpotifyExtractor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def extract_track_info(self, spotify_url: str, save_json: bool = False) -> Optional[Dict]:
+    def extract_track_info(self, spotify_url: str) -> Optional[Dict]:
         track_id = extract_track_id(spotify_url)
-        if not track_id:
-            logging.error("Invalid Spotify track URL")
-            return None
-        
-        try:
-            # Extract track info
-            track = self.sp.track(track_id)
 
+        if not track_id:
+            logging.error("Invalid Spotify URL")
+            return None
+
+        try:
+            track = self.sp.track(track_id)
+            
             # Extract album info
             album = track['album']
-
-            # Process extracted data
             release_date = album['release_date']
             year = release_date.split('-')[0] if release_date else None
 
-            # Extract duration in seconds and formatted
+            # Extract duration in seconds
             duration_ms = track['duration_ms']
             duration_seconds = duration_ms // 1000 if duration_ms else None
-            duration_formatted = f"{duration_seconds // 60}:{duration_seconds % 60:02d}" if duration_seconds else None
 
             # Extract cover URL
             cover_url = album['images'][0]['url'] if album['images'] else None
@@ -95,38 +94,20 @@ class SpotifyExtractor:
             # Extract artists
             artists = [artist['name'] for artist in track['artists']]
 
-            # Compile track info
             track_info = {
-                'artist': ', '.join(artists),
-                'title': track['name'],
-                'album': album['name'],
-                'year': year,
-                'duration_seconds': duration_seconds,
-                'duration_formatted': duration_formatted,
-                'cover_url': cover_url
+                "title": track['name'],
+                "artist": ', '.join(artists),
+                "album": album['name'],
+                "year": year,
+                "duration_seconds": duration_seconds,
+                "cover_url": cover_url,
+                "url": spotify_url,
+                "original_url": spotify_url
             }
-
-            if save_json:
-                log_dir = os.path.join(os.getcwd(), "log")
-                os.makedirs(log_dir, exist_ok=True)
-
-                # Create JSON file for track info
-                filename = f"{track_info['artist']} - {track_info['title']}.json"
-                filepath = os.path.join(log_dir, filename)
-
-                # Save track info to JSON
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(track_info, f, ensure_ascii=False, indent=2)
-
             return track_info
-        except Exception as e:
-            error_msg = str(e)
-            logging.error(f"Spotify extraction error: {error_msg}")
 
-            if "invalid_client" in error_msg:
-                # console.print("[red]Spotify credentials are invalid...")
-                raise ValueError("Credenciales de Spotify inválidas. Verifícalas en Configuración.")
-                
+        except Exception as e:
+            logging.error(f"Error extracting track info: {e}")
             return None
 
     def extract_playlist_tracks(self, playlist_url: str) -> List[Dict]:
@@ -137,7 +118,6 @@ class SpotifyExtractor:
             return []
         
         try:
-
             # Extract playlist info
             playlist = self.sp.playlist(playlist_id)
             total_tracks = playlist['tracks']['total']
@@ -170,10 +150,6 @@ class SpotifyExtractor:
 
                         # Extract album info
                         album = track['album']
-
-                        # Process extracted data
-                        #release_date = album['release_date']
-                        #year = release_date.split('-')[0] if release_date else None
 
                         # Extract duration in seconds
                         duration_ms = track['duration_ms']
