@@ -15,17 +15,21 @@ Una biblioteca musical universal que te permite descargar música de múltiples 
 - 🎯 **Selector de calidad** - Elige entre 128K, 192K o 320K
 - 📋 **Descarga por lotes** - Múltiples canciones simultáneamente
 
-## 🚀 Inicio Rápido
+## 🚀 Guía de Inicio Detallada
 
-### Prerrequisitos
+Sigue estos pasos uno por uno para poner en marcha el proyecto.
 
-- Python 3.8+
-- Node.js 18+
-- Credenciales de Spotify API (para descargas de Spotify)
+### 1. Prerrequisitos (Lo que necesitas instalar antes)
 
-### Instalación Rápida
+Asegúrate de tener instalados los siguientes programas. Si no los tienes, descárgalos e instálalos.
 
-1. **Clona el repositorio:**
+- **Python 3.8 o superior**: [Descargar Python](https://www.python.org/downloads/)
+- **Node.js 20.9.0 o superior** (IMPORTANTE: La versión 18 no funcionará): [Descargar Node.js](https://nodejs.org/)
+- **Git**: [Descargar Git](https://git-scm.com/downloads)
+
+### 2. Configuración Inicial
+
+1. **Clona el repositorio** (si aún no lo has hecho):
    ```bash
    git clone https://github.com/tuusuario/alejandria-of-music.git
    cd alejandria-of-music
@@ -33,144 +37,115 @@ Una biblioteca musical universal que te permite descargar música de múltiples 
 
 2. **Configura las credenciales de Spotify:**
    
-   Crea un archivo `.env` en la raíz del proyecto:
-   ```env
-   SPOTIPY_CLIENT_ID=tu_client_id_aqui
-   SPOTIPY_CLIENT_SECRET=tu_client_secret_aqui
-   ```
+   Necesitas crear un archivo "secreto" para que la app pueda hablar con Spotify.
    
-   > 💡 **Obtén tus credenciales:** Ve al [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/), crea una app y copia tus credenciales.
+   - Crea un archivo llamado `.env` en la carpeta principal del proyecto.
+   - Pega el siguiente contenido dentro:
+     ```env
+     SPOTIPY_CLIENT_ID=tu_client_id_aqui
+     SPOTIPY_CLIENT_SECRET=tu_client_secret_aqui
+     ```
+   
+   > 💡 **¿Cómo consigo estos códigos? (Guía Paso a Paso)**
+   > 
+   > 1. **Ve al Dashboard:** Entra a [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/) e inicia sesión con tu cuenta de Spotify.
+   > 2. **Crea la App:** Haz clic en el botón **"Create app"** (arriba a la derecha).
+   > 3. **Llena los datos:**
+   >    - **App name:** Ponle `Alejandria` (o lo que quieras).
+   >    - **App description:** Pon `Music downloader`.
+   >    - **Redirect URI:** Escribe `http://localhost:8001/callback` y dale a "Add".
+   >    - Marca la casilla de "I understand..." y dale a **"Save"**.
+   > 4. **Obtén las claves:**
+   >    - Una vez creada, ve a la sección **"Settings"** (o "Basic Information").
+   >    - Verás el **Client ID** (copia y pega en tu `.env`).
+   >    - Haz clic en "View client secret" para ver el **Client Secret** (copia y pega en tu `.env`).
 
-3. **Ejecuta el script de inicio:**
+---
+
+## 💻 Cómo Ejecutar el Proyecto (Paso a Paso)
+
+Necesitarás abrir **dos terminales** diferentes. Una para el cerebro (Backend) y otra para la cara (Frontend).
+
+### Terminal 1: El Backend (API)
+
+Esta terminal se encargará de procesar las descargas.
+
+1. **Entra a la carpeta del API:**
    ```bash
-   start.bat
+   cd api
+   ```
+
+2. **Instala las librerías necesarias:**
+   (Solo necesitas hacer esto la primera vez)
+   ```bash
+   # Usamos el python del entorno virtual para evitar errores de permisos
+   ../.venv/bin/python -m pip install -r requirements.txt
+   ```
+
+3. **Enciende el servidor:**
+   ```bash
+   ../.venv/bin/python main.py
    ```
    
-   ¡Eso es todo! La aplicación se abrirá automáticamente en tu navegador.
+   ✅ **Deberías ver:** Un mensaje diciendo que el servidor está corriendo en `http://0.0.0.0:8001`.
+   ⛔ **No cierres esta terminal.**
 
-## 💻 Uso Manual
+### Terminal 2: El Frontend (Web)
 
-### Backend (API)
+Esta terminal mostrará la página web en tu navegador.
 
-```bash
-cd api
-pip install -r requirements.txt
-python main.py
-```
+1. **Abre una NUEVA terminal** (mantén la otra abierta).
 
-La API estará disponible en `http://localhost:8001`
+2. **Entra a la carpeta web:**
+   ```bash
+   cd web
+   ```
 
-### Frontend (Interfaz Web)
+3. **Instala las librerías necesarias:**
+   (Solo necesitas hacer esto la primera vez)
+   ```bash
+   npm install
+   ```
 
-```bash
-cd web
-npm install
-npm run dev
-```
+4. **Enciende la página web:**
+   ```bash
+   npm run dev
+   ```
 
-La interfaz web estará disponible en `http://localhost:3000`
+   ✅ **Deberías ver:** Un mensaje diciendo `Ready in ...` y `http://localhost:3000`.
+   ⛔ **No cierres esta terminal.**
 
-## 🎯 Cómo Usar
+---
 
-1. **Abre la aplicación** en tu navegador
-2. **Pega el enlace** de Spotify, YouTube o SoundCloud
-3. **Selecciona la calidad** de audio deseada (128K, 192K, 320K)
-4. **Haz clic en descargar** y espera a que se procese
-5. **Descarga tu música** en formato MP3 con metadata completa
+## 🎯 ¡Listo!
 
-> **Tip:** Haz clic en el icono de ayuda (?) en la esquina superior derecha para ver detalles sobre las plataformas soportadas.
+Ahora abre tu navegador (Chrome, Safari, etc.) y entra a:
+👉 **http://localhost:3000**
 
-## ⚙️ Configuración Avanzada
+---
 
-El archivo `config.json` permite personalizar el comportamiento:
+## 🔧 Solución de Problemas Comunes
 
-```json
-{
-    "DEFAULT": {
-        "debug": false,
-        "clean_console": true,
-        "show_message": true
-    },
-    "DOWNLOAD": {
-        "allow_metadata": true,
-        "auto_first": false,
-        "quality": "320K",
-        "thread": 5
-    },
-    "SEARCH": {
-        "limit": 5,
-        "exclude_emoji": false
-    }
-}
-```
+### 🔴 Error: "Unsupported engine" o "Node.js version ... is required"
+**Causa:** Tienes una versión vieja de Node.js (probablemente la 18).
+**Solución:**
+1. Ve a [nodejs.org](https://nodejs.org/)
+2. Descarga la versión **LTS** (que suele ser la 20 o 22).
+3. Instálala.
+4. Cierra todas tus terminales y ábrelas de nuevo.
+5. Verifica la versión escribiendo: `node -v` (debe decir v20.x.x o superior).
 
-### Opciones de Configuración
+### 🔴 Error: "command not found: python" o "pip"
+**Causa:** Tu computadora no sabe dónde está Python instalado globalmente.
+**Solución:**
+Usa siempre el comando largo que apunta al entorno virtual del proyecto:
+- En lugar de `python`, usa: `../.venv/bin/python`
+- En lugar de `pip`, usa: `../.venv/bin/python -m pip`
 
-#### DEFAULT
-- **`debug`**: Activar modo debug para ver logs detallados
-- **`clean_console`**: Limpiar consola para interfaz más limpia
-- **`show_message`**: Mostrar mensajes informativos durante descargas
-
-#### DOWNLOAD
-- **`allow_metadata`**: Descargar carátulas y embeber metadata (artista, álbum, etc.)
-- **`auto_first`**: Seleccionar automáticamente el primer resultado de búsqueda
-- **`quality`**: Calidad de audio por defecto (128K, 192K, 320K)
-- **`thread`**: Número de descargas concurrentes (máximo 10)
-
-#### SEARCH
-- **`limit`**: Número máximo de resultados de búsqueda
-- **`exclude_emoji`**: Excluir emojis de los resultados
-
-## 📁 Estructura del Proyecto
-
-```
-alejandria-of-music/
-├── api/                    # Backend FastAPI (Puerto 8001)
-├── web/                    # Frontend Next.js (Puerto 3000)
-├── config.json             # Configuración
-├── .env                    # Variables de entorno
-├── start.bat               # Script de inicio
-└── README.md               # Documentación
-```
-
-## 🛠️ Tecnologías Utilizadas
-
-### Backend
-- **FastAPI** - Framework web moderno y rápido
-- **Spotipy** - Cliente de Spotify API
-- **yt-dlp** - Descargador universal de audio/video
-- **mutagen** - Manipulación de metadata de audio
-
-### Frontend
-- **Next.js 14** - Framework React con App Router
-- **TypeScript** - JavaScript con tipado estático
-- **Tailwind CSS** - Framework de estilos utilitarios
-- **React Hooks** - Gestión de estado moderna
-- **Lucide React** - Iconos modernos
-
-## 🎨 Plataformas Soportadas
-
-| Plataforma | Soporte | Características |
-|------------|---------|-----------------|
-| 🎵 Spotify | ✅ Completo | Canciones, álbumes, playlists (con portadas) |
-| 🎬 YouTube | ✅ Completo | Videos individuales, extracción de audio |
-| 🎧 SoundCloud | ✅ Completo | Tracks individuales |
-
-## 🔧 Solución de Problemas
-
-### Error de conexión con Spotify
-- Verifica que tus credenciales en `.env` sean correctas
-- Asegúrate de que tu app de Spotify esté activa en el Dashboard
-
-### Error al descargar
-- Verifica tu conexión a internet
-- Asegúrate de que el enlace sea válido y público
-- Intenta con una calidad de audio menor
-
-### La interfaz no carga
-- Verifica que el backend esté corriendo en el puerto 8001
-- Verifica que el frontend esté corriendo en el puerto 3000
-- Revisa la consola del navegador para errores
+### 🔴 La descarga no inicia o da error
+1. Revisa la **Terminal 1 (Backend)**. ¿Hay algún mensaje de error en rojo?
+2. Verifica que tu archivo `.env` tenga las credenciales correctas.
+3. Asegúrate de que ambas terminales sigan abiertas y corriendo.
 
 ## 📝 API Endpoints
 

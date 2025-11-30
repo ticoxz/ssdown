@@ -14,7 +14,7 @@ export default function Settings() {
 
     useEffect(() => {
         // Cargar configuración actual al montar
-        fetch("http://localhost:8000/api/settings")
+        fetch("http://localhost:8001/api/settings")
             .then((res) => res.json())
             .then((data) => {
                 if (data.client_id) setClientId(data.client_id);
@@ -38,7 +38,7 @@ export default function Settings() {
             // Guardar calidad en localStorage
             localStorage.setItem("audio_quality", quality);
 
-            const response = await fetch("http://localhost:8000/api/settings", {
+            const response = await fetch("http://localhost:8001/api/settings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ client_id: clientId, client_secret: clientSecret }),
