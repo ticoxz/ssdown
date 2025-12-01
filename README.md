@@ -152,6 +152,15 @@ Usa siempre el comando largo que apunta al entorno virtual del proyecto:
 2. Verifica que tu archivo `.env` tenga las credenciales correctas.
 3. Asegúrate de que ambas terminales sigan abiertas y corriendo.
 
+### 🔴 Error: "Sign in to confirm you're not a bot" (Bloqueo de YouTube)
+**Causa:** YouTube está bloqueando la descarga por seguridad.
+**Solución:**
+1. Instala la extensión **"Get cookies.txt LOCALLY"** en tu navegador (Chrome o Edge).
+2. Ve a YouTube y asegúrate de haber iniciado sesión.
+3. Usa la extensión para exportar tus cookies como un archivo `cookies.txt`.
+4. Coloca ese archivo `cookies.txt` en la carpeta raíz de la aplicación (donde está `Alejandria.exe` o `main.py`).
+5. Intenta descargar de nuevo. La app usará este archivo para "demostrar" que eres un humano.
+
 ## 📝 API Endpoints
 
 - `GET /` - Información de la API
